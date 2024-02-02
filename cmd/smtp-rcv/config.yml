@@ -1,0 +1,9 @@
+bind:
+    - address: 127.0.0.1:2525
+      type: tcp4
+      domain: smtp.example.com
+      version: rfc821
+    - address: '[::]:2525'
+      type: tcp6
+      domain: smtp.example.com
+      version: rfc821

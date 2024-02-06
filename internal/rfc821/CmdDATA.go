@@ -1,11 +1,8 @@
 package rfc821
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
-	"net"
-	"net/textproto"
+	"go-smtp-rcv/internal"
 )
 
 /*
@@ -87,27 +84,25 @@ F: 451, 554
 E: 500, 501, 503, 421
 */
 type CmdDATA struct {
-	connection net.Conn
-	args       string
+	client internal.I_SMTP_CLIENT
+	args   string
 }
 
-func NewCmdDATA(c net.Conn, args string) *CmdDATA {
+func NewCmdDATA(c internal.I_SMTP_CLIENT, args string) *CmdDATA {
 	cmd := &CmdDATA{
-		connection: c,
-		args:       args,
+		client: c,
+		args:   args,
 	}
 	return cmd
 }
 
 func (cmd *CmdDATA) RunCMD() {
 	if len(cmd.args) != 0 {
-		cmd.connection.Write([]byte("501 Syntax error in parameters or arguments\r\n"))
-		cmd.connection.Close()
+		cmd.client.GetSMTPConnection().WriteCMD("501 Syntax error in parameters or arguments")
+		//cmd.client.Close()
 	}
-	cmd.connection.Write([]byte("354 Start mail input; end with <CRLF>.<CRLF>\r\n"))
-	r := textproto.NewReader(bufio.NewReader(cmd.connection))
-	var data bytes.Buffer
-	data.ReadFrom(r.DotReader())
-	cmd.connection.Write([]byte("250 Requested mail action okay, completed\r\n"))
-	fmt.Printf("Recieved data:%s", data.String())
+	cmd.client.GetSMTPConnection().WriteCMD("354 Start mail input; end with <CRLF>.<CRLF>")
+	data, _ := cmd.client.GetSMTPConnection().ReadRawCRLFDotCRLF()
+	cmd.client.GetSMTPConnection().WriteCMD("250 Requested mail action okay, completed")
+	fmt.Printf("Recieved data:%s", data)
 }

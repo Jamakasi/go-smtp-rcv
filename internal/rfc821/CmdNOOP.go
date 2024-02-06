@@ -1,6 +1,6 @@
 package rfc821
 
-import "net"
+import "go-smtp-rcv/internal"
 
 /*
 RFC 821
@@ -28,16 +28,16 @@ E: 421 <domain> Service not available,
 	must shut down]
 */
 type CmdNOOP struct {
-	connection net.Conn
+	client internal.I_SMTP_CLIENT
 }
 
-func NewCmdNOOP(c net.Conn) *CmdNOOP {
+func NewCmdNOOP(c internal.I_SMTP_CLIENT) *CmdNOOP {
 	cmd := &CmdNOOP{
-		connection: c,
+		client: c,
 	}
 	return cmd
 }
 
 func (cmd *CmdNOOP) RunCMD() {
-	cmd.connection.Write([]byte("250 Requested mail action okay, completed\r\n"))
+	cmd.client.GetSMTPConnection().WriteCMD("250 Requested mail action okay, completed")
 }

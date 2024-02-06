@@ -1,8 +1,6 @@
 package rfc821
 
-import (
-	"net"
-)
+import "go-smtp-rcv/internal"
 
 /*
 HELLO (HELO)
@@ -37,22 +35,22 @@ E: 421 <domain> Service not available,
 	must shut down]
 */
 type CmdHELO struct {
-	connection net.Conn
-	args       string
+	client internal.I_SMTP_CLIENT
+	args   string
 }
 
-func NewCmdHELO(c net.Conn, args string) *CmdHELO {
+func NewCmdHELO(c internal.I_SMTP_CLIENT, args string) *CmdHELO {
 	cmd := &CmdHELO{
-		connection: c,
-		args:       args,
+		client: c,
+		args:   args,
 	}
 	return cmd
 }
 
 func (cmd *CmdHELO) RunCMD() {
 	if len(cmd.args) == 0 {
-		cmd.connection.Write([]byte("501 Syntax error in parameters or arguments\r\n"))
-		cmd.connection.Close()
+		cmd.client.GetSMTPConnection().WriteCMD("501 Syntax error in parameters or arguments")
+		//cmd.client.Close()
 	}
-	cmd.connection.Write([]byte("250 Requested mail action okay, completed\r\n"))
+	cmd.client.GetSMTPConnection().WriteCMD("250 Requested mail action okay, completed")
 }

@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go-smtp-rcv/internal/config"
-	"go-smtp-rcv/internal/parser"
-	"go-smtp-rcv/internal/rfc821"
+	"go-smtp-rcv/internal/shared"
 	"net"
 	"os"
 	"os/signal"
@@ -25,6 +24,7 @@ func main() {
 
 	var wg sync.WaitGroup
 	//
+	clientID := 0
 	for _, srv := range conf.Bind {
 		l, err := net.Listen(srv.S_type, srv.S_addr)
 		if err != nil {
@@ -55,9 +55,12 @@ func main() {
 					fmt.Println(err)
 					return
 				}
-				stype := rfc821.NewSMTP_rfc821(c, srv)
-				proces := parser.Parser{Ver: stype}
-				go proces.Parse()
+
+				clientID += 1
+				smtpCl := shared.NewSMTPClient(clientID, c, srv)
+				go smtpCl.Handle()
+				/*proces := parser.Parser{Ver: stype}
+				go proces.Parse()*/
 			}
 		}()
 	}

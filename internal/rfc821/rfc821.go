@@ -3,8 +3,8 @@ package rfc821
 import (
 	"bytes"
 	"fmt"
+	"go-smtp-rcv/internal"
 	"go-smtp-rcv/internal/config"
-	"net"
 )
 
 const (
@@ -33,53 +33,48 @@ func (c command) match(in []byte) bool {
 }
 
 type SMTP_rfc821 struct {
-	connection    net.Conn
-	server_config config.Server
+	client internal.I_SMTP_CLIENT
 }
 
-func NewSMTP_rfc821(con net.Conn, serv_conf config.Server) *SMTP_rfc821 {
-	s := &SMTP_rfc821{
-		connection:    con,
-		server_config: serv_conf,
-	}
+func NewSMTP_rfc821(serv_conf config.Server) *SMTP_rfc821 {
+	s := &SMTP_rfc821{}
 	return s
 }
-func (s *SMTP_rfc821) GetConn() net.Conn {
-	return s.connection
+func (s *SMTP_rfc821) SetClient(cl internal.I_SMTP_CLIENT) {
+	s.client = cl
 }
 func (s *SMTP_rfc821) GetGreeating() string {
-	return fmt.Sprintf("220 %s SMTP minimal rfc821\r\n", s.server_config.S_domain)
+	return fmt.Sprintf("220 %s SMTP minimal rfc821\r\n", "!add domain!")
 }
-func (s *SMTP_rfc821) HandleCMD(cmd string, vars string) {
-
-	switch cmd {
+func (s *SMTP_rfc821) HandleCMD(mess internal.I_RawSMTPMessage) {
+	switch mess.GetSMTPCMD() {
 	case "HELO":
 		{
-			NewCmdHELO(s.connection, vars).RunCMD()
+			NewCmdHELO(s.client, mess.GetCMDArgs()).RunCMD()
 		}
 	case "MAIL":
 		{
-			NewCmdMAIL(s.connection, vars).RunCMD()
+			NewCmdMAIL(s.client, mess.GetCMDArgs()).RunCMD()
 		}
 	case "RCPT":
 		{
-			NewCmdRCPT(s.connection, vars).RunCMD()
+			NewCmdRCPT(s.client, mess.GetCMDArgs()).RunCMD()
 		}
 	case "NOOP":
 		{
-			NewCmdNOOP(s.connection).RunCMD()
+			NewCmdNOOP(s.client).RunCMD()
 		}
 	case "DATA":
 		{
-			NewCmdDATA(s.connection, vars).RunCMD()
+			NewCmdDATA(s.client, mess.GetCMDArgs()).RunCMD()
 		}
 	case "QUIT":
 		{
-			NewCmdQUIT(s.connection).RunCMD()
+			NewCmdQUIT(s.client).RunCMD()
 		}
 	default:
 		{
-			s.connection.Write([]byte("502 Command not implemented\r\n"))
+			s.client.GetSMTPConnection().WriteCMD("502 Command not implemented")
 		}
 	}
 

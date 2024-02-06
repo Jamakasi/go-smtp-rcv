@@ -2,7 +2,7 @@ package rfc821
 
 import (
 	"fmt"
-	"net"
+	"go-smtp-rcv/internal"
 	"strings"
 )
 
@@ -34,29 +34,29 @@ E: 500, 501, 503, 421
 */
 
 type CmdRCPT struct {
-	connection net.Conn
-	args       string
+	client internal.I_SMTP_CLIENT
+	args   string
 }
 
-func NewCmdRCPT(c net.Conn, args string) *CmdRCPT {
+func NewCmdRCPT(c internal.I_SMTP_CLIENT, args string) *CmdRCPT {
 	cmd := &CmdRCPT{
-		connection: c,
-		args:       args,
+		client: c,
+		args:   args,
 	}
 	return cmd
 }
 
 func (cmd *CmdRCPT) RunCMD() {
 	if len(cmd.args) < 5 {
-		cmd.connection.Write([]byte("501 Syntax error in parameters or arguments\r\n"))
-		cmd.connection.Close()
+		cmd.client.GetSMTPConnection().WriteCMD("501 Syntax error in parameters or arguments")
+		//cmd.connection.Close()
 	}
 	cmd_test := cmd.args[:3]
 	if strings.Compare(cmd_test, "TO:") != 0 {
-		cmd.connection.Write([]byte("501 Syntax error in parameters or arguments\r\n"))
-		cmd.connection.Close()
+		cmd.client.GetSMTPConnection().WriteCMD("501 Syntax error in parameters or arguments")
+		//cmd.connection.Close()
 	}
 	raw_mail := cmd.args[3:]
 	fmt.Printf("RCPT \"%s\" has contain some data: \"%s\"\n", cmd_test, raw_mail)
-	cmd.connection.Write([]byte("250 Requested mail action okay, completed\r\n"))
+	cmd.client.GetSMTPConnection().WriteCMD("250 Requested mail action okay, completed")
 }

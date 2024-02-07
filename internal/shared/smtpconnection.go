@@ -34,6 +34,7 @@ ERRCode:
 */
 func (mw *SMTPConnection) ReadCMD() internal.I_RawSMTPMessage {
 	raw, err := mw.ReadRawCRLF() //data.ReadFrom(r.DotReader())
+
 	if err != nil {
 		return &RawSMTPMessage{"", "", R_E_READ_ERROR, err}
 	}
@@ -66,13 +67,16 @@ func (mw *MsgWorker) ReadCRLF() (msg string, args string, errcode uint, err erro
 */
 
 func (mw *SMTPConnection) WriteCMD(msg string) (n int, err error) {
-	msg += "\r\n"
+	if !strings.HasSuffix(msg, "\r\n") {
+		msg += "\r\n"
+	}
 	for len(msg) > 0 {
 		n, err = mw.connection.Write([]byte(msg))
 		if err != nil {
 			return n, err
 		}
 		msg = msg[n:]
+		//fmt.Printf("write: %s err:%s\n", msg, err)
 	}
 
 	return 0, nil

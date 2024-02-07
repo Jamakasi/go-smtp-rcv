@@ -44,9 +44,10 @@ func (s *SMTP_rfc821) SetClient(cl internal.I_SMTP_CLIENT) {
 	s.client = cl
 }
 func (s *SMTP_rfc821) GetGreeating() string {
-	return fmt.Sprintf("220 %s SMTP minimal rfc821\r\n", "!add domain!")
+	return fmt.Sprintf("220 %s SMTP minimal rfc821", "!add domain!")
 }
 func (s *SMTP_rfc821) HandleCMD(mess internal.I_RawSMTPMessage) {
+	//fmt.Printf("cmd: %s, args: %s\n", mess.GetSMTPCMD(), mess.GetCMDArgs())
 	switch mess.GetSMTPCMD() {
 	case "HELO":
 		{

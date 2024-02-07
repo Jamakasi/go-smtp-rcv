@@ -12,6 +12,7 @@ type SMTPClient struct {
 	id           int
 	smtpcon      internal.I_SMTP_CONNECTION
 	smtp_rfc_ins internal.I_SMTP_SPEC
+	logger       internal.I_LOGGER
 	config       config.Server
 }
 
@@ -34,11 +35,14 @@ func (cl *SMTPClient) GetID() int {
 func (cl *SMTPClient) GetSMTPConnection() internal.I_SMTP_CONNECTION {
 	return cl.smtpcon
 }
-
+func (cl *SMTPClient) GetLogger() internal.I_LOGGER {
+	return cl.logger
+}
 func (cl *SMTPClient) Handle() {
 	cl.smtpcon.WriteCMD(cl.smtp_rfc_ins.GetGreeating())
 	for {
 		smtp_mess := cl.smtpcon.ReadCMD()
+		//fmt.Printf("cmd: %s, args: %s\n", smtp_mess.GetSMTPCMD(), smtp_mess.GetCMDArgs())
 		switch smtp_mess.GetErrCode() {
 		case R_E_READ_ERROR:
 			{

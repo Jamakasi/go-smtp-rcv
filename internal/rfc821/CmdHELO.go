@@ -1,6 +1,8 @@
 package rfc821
 
-import "go-smtp-rcv/internal"
+import (
+	"go-smtp-rcv/internal"
+)
 
 /*
 HELLO (HELO)
@@ -53,4 +55,5 @@ func (cmd *CmdHELO) RunCMD() {
 		//cmd.client.Close()
 	}
 	cmd.client.GetSMTPConnection().WriteCMD("250 Requested mail action okay, completed")
+	//fmt.Printf("cmd: %s, args: %s\n", "HELO", cmd.args)
 }
